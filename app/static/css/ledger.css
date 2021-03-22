@@ -1,0 +1,13 @@
+body {
+  height: 100vh;
+}
+
+.input::placeholder {
+  color: black !important;
+}
+
+.tableMonth {
+  background-color: #74CBBD !important;
+  color: white;
+  font-weight: bold;
+}
