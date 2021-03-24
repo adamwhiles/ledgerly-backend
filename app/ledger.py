@@ -4,7 +4,6 @@ from . import db
 from flask_login import login_required, current_user
 from pprint import pprint
 import datetime
-#from datetime import date, datetime
 import sys
 import json
 import simplejson
@@ -15,12 +14,7 @@ def convert_timestamp(item_date_object):
     if isinstance(item_date_object, (datetime.date, datetime.datetime)):
         return item_date_object.strftime("%m/%d/%Y")
 
-@ledger.route('/api/getLedger')
-@login_required
-def getLedger():
-    # get ledger and transactions for the current user
-    #u_ledger = Ledgers.query.filter_by(UserID=current_user.UserID).first()
-    #txs = Transactions.query.filter_by(LedgerID=u_ledger.LedgerID).all()
+def getUserLedger():
     txs = db.session.query(Transactions.LedgerID, Transactions.TransactionID, Transactions.Amount, Transactions.Description, Transactions.Date, Ledgers.StartingBalance, Categories.CategoryName, User.UserID)\
             .outerjoin(Ledgers, Transactions.LedgerID == Ledgers.LedgerID)\
             .outerjoin(User, User.UserID == Ledgers.UserID)\
@@ -33,15 +27,12 @@ def getLedger():
     typeList = []
     for c in cats:
         typeList.append({'CategoryID': c.CategoryID, 'CategoryName': c.CategoryName})
-
-    #new_ledger = Ledgers(UserID=5, StartingBalance=10.34)
-    #db.session.add(new_ledger)
-    #db.session.commit()
-    #txs_schema = TransactionsSchema(many=True)
-    #output = txs_schema.dump(txs)
-    #return jsonify({'transactions' : output})
     return simplejson.dumps({'transactions': txs, 'categories': typeList}, default=convert_timestamp)
-    #return render_template('ledger.html', txs=txs, cats=cats, types=types)
+
+@ledger.route('/api/getLedger')
+@login_required
+def getLedger():
+    return getUserLedger()
 
 @ledger.route('/api/deleteEntry/<id>')
 @login_required
@@ -106,7 +97,7 @@ def addEntry():
         db.session.add(new_entry)
         db.session.commit()
         flash('New Entry Added')
-        return jsonify({'status': "success"})
+        return getUserLedger()
     except Exception as e:
         print("Failed to add New Entry")
         print(e)

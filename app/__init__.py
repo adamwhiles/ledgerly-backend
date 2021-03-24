@@ -14,6 +14,7 @@ def create_app():
     app.config['SECRET_KEY'] = os.getenv('SECRET')
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DBURI')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SQLALCHEMY_ECHO'] = True
 
     db.init_app(app)
 
