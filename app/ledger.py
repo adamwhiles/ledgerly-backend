@@ -25,16 +25,22 @@ def getLedger():
             .outerjoin(Ledgers, Transactions.LedgerID == Ledgers.LedgerID)\
             .outerjoin(User, User.UserID == Ledgers.UserID)\
             .outerjoin(Categories, Transactions.CategoryID == Categories.CategoryID)\
-            .filter(User.UserID == 1).order_by(Transactions.Date).all()
-    cats = db.session.query(Categories).all()
+            .filter(User.UserID == current_user.UserID).order_by(Transactions.Date).all()
+    cats = Categories.query.all()
     types = db.session.query(TransactionTypes).all()
+    for t in txs:
+        print(type(t))
+    typeList = []
+    for c in cats:
+        typeList.append({'CategoryID': c.CategoryID, 'CategoryName': c.CategoryName})
+
     #new_ledger = Ledgers(UserID=5, StartingBalance=10.34)
     #db.session.add(new_ledger)
     #db.session.commit()
     #txs_schema = TransactionsSchema(many=True)
     #output = txs_schema.dump(txs)
     #return jsonify({'transactions' : output})
-    return simplejson.dumps({'transactions': txs }, default=convert_timestamp)
+    return simplejson.dumps({'transactions': txs, 'categories': typeList}, default=convert_timestamp)
     #return render_template('ledger.html', txs=txs, cats=cats, types=types)
 
 @ledger.route('/api/deleteEntry/<id>')
@@ -78,40 +84,31 @@ def editEntry(id):
 @ledger.route('/api/addEntry', methods=['POST'])
 @login_required
 def addEntry():
+    # Set data to the json object received from
+    data = request.get_json()
 
+    # Get the current logged in user
     userid = current_user.get_id()
-    eDate = request.form.get('date')
-    eDesc = request.form.get('desc')
-    eAmount = float(request.form.get('amount'))
-    eCategory = int(request.form.get('category'))
-    eType = int(request.form.get('type'))
-    print(eDate)
-    print(eDesc)
-    print(eAmount)
-    print(eCategory)
-    print(eType)
-    print("Type of type is: ")
-    print(type(eType))
-    print(current_user.get_id())
+
+    # Get the ledger for the current logged in user
     userLedger = Ledgers.query.filter_by(UserID=userid).first()
-    print("got ledger")
-    print(userLedger.LedgerID)
-    #eDate = datetime.fromisoformat(eDate[0])
-    print("Date: " + eDate)
-    #datetime.strptime(eDate, '%B %-d, %Y')
+
+    # Format date from the json date type
+    formatDate = datetime.datetime.strptime(data['Date'], '%Y-%m-%dT%H:%M:%S.%fZ')
+
+    # Add to database
     try:
-        print("Adding New Entry")
         # Check if the entry is a debit, if so, convert to negative amount
-        if eType == 2:
-            print("This is a debit")
-            eAmount = eAmount * -1
-        new_entry = Transactions(LedgerID=userLedger.LedgerID, TypeID=eType, Amount=eAmount, Description=eDesc, Date=datetime.strptime(eDate, '%B %d, %Y'), DateAdded=date.today(), CategoryID=eCategory, Cleared=0)
+        if data['Type'] == 2:
+            data['Amount'] = data['Amount'] * -1
+        # Setup out new entry to be added
+        new_entry = Transactions(LedgerID=userLedger.LedgerID, TypeID=data['Type'], Amount=data['Amount'], Description=data['Description'], Date=formatDate, DateAdded=datetime.date.today(), CategoryID=data['Category'], Cleared=0)
         db.session.add(new_entry)
         db.session.commit()
         flash('New Entry Added')
-        return redirect(url_for('ledger.getLedger'))
+        return jsonify({'status': "success"})
     except Exception as e:
         print("Failed to add New Entry")
         print(e)
         flash('Pleasy try your action again.')
-        return redirect(url_for('ledger.getLedger'))
+        return jsonify({'status': "failed"})
