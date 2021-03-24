@@ -1,5 +1,5 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
-from .models import Ledgers, TransactionTypes, Categories, Transactions, User, TransactionsSchema, UserSchema, TypesSchema, CategoriesSchema, LedgersSchema
+from flask import Blueprint, flash, request, jsonify
+from .models import Ledgers, TransactionTypes, Categories, Transactions, User
 from . import db
 from flask_login import login_required, current_user
 from pprint import pprint
@@ -51,7 +51,7 @@ def deleteEntry(id):
             flash('Entry Deleted')
         else:
             flash('Pleasy try your action again.')
-    return redirect(url_for('ledger.getLedger'))
+    return "go back to ledger"
 
 @ledger.route('/api/editEntry/<id>')
 @login_required
@@ -70,7 +70,7 @@ def editEntry(id):
             flash('Entry Deleted')
         else:
             flash('Pleasy try your action again.')
-    return redirect(url_for('ledger.getLedger'))
+    return "go back to ledger"
 
 @ledger.route('/api/addEntry', methods=['POST'])
 @login_required

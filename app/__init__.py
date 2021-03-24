@@ -2,11 +2,9 @@ from flask import Flask
 from dotenv import load_dotenv
 import os
 from flask_sqlalchemy import SQLAlchemy
-from flask_marshmallow import Marshmallow
 from flask_login import LoginManager
 
 db = SQLAlchemy()
-ma = Marshmallow()
 
 def create_app():
     app = Flask(__name__)
@@ -33,9 +31,6 @@ def create_app():
 
     from .ledger import ledger as ledger_blueprint
     app.register_blueprint(ledger_blueprint)
-
-    from .main import main as main_blueprint
-    app.register_blueprint(main_blueprint)
 
 
     return app

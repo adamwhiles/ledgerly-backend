@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask import Blueprint, redirect, request, flash
 from .models import User
 from . import db
 from argon2 import PasswordHasher
@@ -8,10 +8,6 @@ from datetime import date
 auth = Blueprint('auth', __name__)
 ph = PasswordHasher() # argon2id passwordhasher
 
-# Route to handle showing the login form
-@auth.route('/login')
-def login():
-    return render_template('login.html')
 
 # Route to handle login form submission
 @auth.route('/api/login', methods=['POST'])
@@ -41,10 +37,6 @@ def login_post():
         #flash('Please check you login details.')
         return {'login': "failed"}
 
-# Route to handle showing the signup form
-@auth.route('/signup')
-def signup():
-    return render_template('signup.html')
 
 # Route to handle signup form submission
 @auth.route('/signup', methods=['POST'])
@@ -59,17 +51,17 @@ def signup_post():
     if user:
         # if a user is found to already exist, send back to signup form
         flash('Email address already exists')
-        return redirect(url_for('auth.signup'))
+        return "send to sign up form"
     # create new user and add to database
     new_user = User(Email=email, Name=name, Password=ph.hash(password), DateJoined=date.today())
     db.session.add(new_user)
     db.session.commit()
 
     # upon successful signup, send to login form
-    return redirect(url_for('auth.login'))
+    return "go to login"
 
 # logout route
 @auth.route('/logout')
 def logout():
     logout_user()
-    return redirect(url_for('main.index'))
+    return "logout"

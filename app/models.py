@@ -1,6 +1,5 @@
 from flask_login import UserMixin
 from . import db
-from . import ma
 
 class User(UserMixin, db.Model):
     __tablename__ = "Users"
@@ -43,25 +42,3 @@ class Transactions(db.Model):
     DateAdded = db.Column(db.Date)
     CategoryID = db.Column(db.Integer, db.ForeignKey(Categories.CategoryID))
     Cleared = db.Column(db.Integer)
-
-class UserSchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = User
-
-class LedgersSchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = Ledgers
-        include_fk = True
-
-class CategoriesSchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = Categories
-
-class TypesSchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = TransactionTypes
-
-class TransactionsSchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = Transactions
-        include_fk = True
