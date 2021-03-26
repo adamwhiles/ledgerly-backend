@@ -1,13 +1,16 @@
-from flask import Blueprint, redirect, request, flash
+from flask import Blueprint, redirect, request, flash, jsonify
 from .models import User
 from . import db
 from argon2 import PasswordHasher
-from flask_login import login_user, logout_user
+from flask_login import login_user, logout_user, current_user
 from datetime import date
 
 auth = Blueprint('auth', __name__)
 ph = PasswordHasher() # argon2id passwordhasher
 
+@auth.route('/api/isLoggedIn', methods=['GET'])
+def isLoggedIn():
+    return jsonify({'user': current_user.get_id()})
 
 # Route to handle login form submission
 @auth.route('/api/login', methods=['POST'])
@@ -27,7 +30,7 @@ def login_post():
             if ph.verify(user.Password, password):
                 # if password matches, login the user and send to profile page
                 login_user(user)
-                return {'login': "success"}
+                return {'login': "success", 'user': current_user.get_id()}
         except Exception as e:
             # if password verification failed, redirect to login with error
             #flash('Please check you login details.')
@@ -61,7 +64,7 @@ def signup_post():
     return "go to login"
 
 # logout route
-@auth.route('/logout')
+@auth.route('/api/logout')
 def logout():
     logout_user()
-    return "logout"
+    return jsonify({'status': 'success'})
