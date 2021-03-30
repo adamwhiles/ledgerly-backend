@@ -22,7 +22,7 @@ def getUserLedger():
             .outerjoin(Ledgers, Transactions.LedgerID == Ledgers.LedgerID)\
             .outerjoin(User, User.UserID == Ledgers.UserID)\
             .outerjoin(Categories, Transactions.CategoryID == Categories.CategoryID)\
-            .filter(User.UserID == current_user.UserID).order_by(Transactions.Date).all()
+            .filter(User.UserID == current_user.UserID).order_by(Transactions.Date).order_by(Transactions.TypeID).order_by(Transactions.TransactionID).all()
     # Get the list of categories in the database, so these can be loaded into the form field in React
     cats = Categories.query.all()
     # Setup empty list and append json objects for each category so we can send to React
