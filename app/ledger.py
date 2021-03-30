@@ -18,7 +18,7 @@ def convert_timestamp(item_date_object):
 @login_required
 def getUserLedger():
     # Get all of the transactions that belong to the logged in user
-    txs = db.session.query(Transactions.LedgerID, Transactions.TransactionID, Transactions.Amount, Transactions.Description, Transactions.Date, Ledgers.StartingBalance, Categories.CategoryID, Categories.CategoryName, User.UserID)\
+    txs = db.session.query(Transactions.LedgerID, Transactions.TransactionID, Transactions.Amount, Transactions.Description, Transactions.Date, Transactions.Cleared, Ledgers.StartingBalance, Categories.CategoryID, Categories.CategoryName, User.UserID)\
             .outerjoin(Ledgers, Transactions.LedgerID == Ledgers.LedgerID)\
             .outerjoin(User, User.UserID == Ledgers.UserID)\
             .outerjoin(Categories, Transactions.CategoryID == Categories.CategoryID)\
@@ -35,6 +35,41 @@ def getUserLedger():
 @login_required
 def getLedger():
     return getUserLedger()
+
+@ledger.route('/api/toggleCleared', methods=['POST'])
+@login_required
+def toggleCleared():
+    # Set data to the json object received from
+    data = request.get_json()
+
+    # Set id to our entry id from React
+    id = data['entryID']
+    cleared = data['cleared']
+    # Get the current logged in user
+    userid = current_user.get_id()
+
+    # check that entry is valid and also belongs to our logged in user_id
+    entry = db.session.query(User.UserID, Transactions.TransactionID)\
+        .outerjoin(Ledgers, Ledgers.LedgerID == Transactions.LedgerID)\
+        .outerjoin(User, Ledgers.UserID == User.UserID).filter(Transactions.TransactionID == id).first()
+    if not entry:
+        print("No Match")
+        flash('Pleasy try your action again.')
+    else:
+        # Verify that the logged in user is the owner of the entry
+        if entry.UserID == current_user.UserID:
+
+            # Get the transaction that needs to be updated from the database
+            e = Transactions.query.filter_by(TransactionID = id).first()
+            # Set items to the updated values
+            e.Cleared = cleared
+            # Commit changes to database
+            db.session.commit()
+            print("Entry Modified")
+        else:
+            print("Edit Failed")
+            flash('Pleasy try your action again.')
+    return jsonify({'status': "success"})
 
 @ledger.route('/api/deleteEntry', methods=['POST'])
 @login_required
