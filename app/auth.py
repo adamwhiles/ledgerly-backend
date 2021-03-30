@@ -10,7 +10,7 @@ ph = PasswordHasher() # argon2id passwordhasher
 
 @auth.route('/api/isLoggedIn', methods=['GET'])
 def isLoggedIn():
-    return jsonify({'user': current_user.get_id()})
+    return jsonify({'user': current_user.get_id(), 'user_info': current_user.get_user()})
 
 # Route to handle login form submission
 @auth.route('/api/login', methods=['POST'])

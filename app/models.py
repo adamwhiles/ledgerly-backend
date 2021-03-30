@@ -1,3 +1,4 @@
+from flask import jsonify
 from flask_login import UserMixin
 from . import db
 
@@ -11,6 +12,8 @@ class User(UserMixin, db.Model):
 
     def get_id(self):
            return (self.UserID)
+    def get_user(self):
+           return({'UserID': self.UserID, 'Email': self.Email, 'Name': self.Name, 'DateJoined': self.DateJoined})
 
 
 class Ledgers(db.Model):
